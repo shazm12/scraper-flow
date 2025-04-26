@@ -35,3 +35,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 todo.md
+
+# Prisma generated files
+/prisma/migrations/
+/prisma/*.db
+/prisma/*.db-journal
+
+# Prisma debug logs
+/prisma/debug.log
