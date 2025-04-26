@@ -21,7 +21,7 @@ function layout({children}: {children: React.ReactNode}) {
                 </div>
             </header>
             <Separator />
-            <div className="overflow-auto">
+            <div className="overflow-auto mt-6 px-3">
                 {children}
             </div>
         </div>
