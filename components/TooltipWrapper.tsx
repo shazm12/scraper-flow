@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 interface Props {
     children: ReactNode,
     content: ReactNode,
-    side?: "top" | "botton" | "left" | "right"
+    side?: "top" | "bottom" | "left" | "right"
 }
 
 function TooltipWrapper(props: Props) {
