@@ -34,7 +34,7 @@ function WorkflowCard({workflow}:{ workflow: Workflow}) {
                     </div>
                     <div>
                         <h3 className="text-base font-bold text-muted-foreground flex items-center">
-                            <Link href={`/workflows/editor/${workflow.id}`} className="flex items-cetner hover:underline">
+                            <Link href={`/workflow/editor/${workflow.id}`} className="flex items-cetner hover:underline">
                                 {workflow.name}
                             </Link>
                             {isDraft && (
