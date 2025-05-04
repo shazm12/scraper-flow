@@ -1,12 +1,13 @@
 "use client";
 import { Workflow } from '@prisma/client';
 import { Background, BackgroundVariant, Controls, ReactFlow, useEdgesState, useNodesState, useReactFlow } from '@xyflow/react';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import "@xyflow/react/dist/style.css";
 import { CreateFlowNode } from '@/lib/helper/workflow/createFlowNode';
 import { TaskType } from '@/types/task';
 import NodeComponent from './nodes/nodeComponent';
+import { AppNode } from '@/types/appNode';
 
 
 const nodeTypes = {
@@ -19,9 +20,33 @@ const fitViewOptions = { padding : 1 };
 
 
 function FlowEditor({ workflow }: { workflow: Workflow}) {
-    const [nodes, setNodes, onNodeChange] = useNodesState([]);
+    const [nodes, setNodes, onNodeChange] = useNodesState<AppNode>([]);
     const [edges, setEdges, onEdgeChange ] = useEdgesState([]);
-    const { setViewport } = useReactFlow();
+    const { setViewport, screenToFlowPosition } = useReactFlow();
+
+
+    const onDragOver = useCallback((event: React.DragEvent) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+    },[]);
+
+    const onDrop = useCallback((event: React.DragEvent) => {
+      event.preventDefault();
+      const taskType = event.dataTransfer.getData("application/reactflow");
+
+      if(typeof taskType === undefined || !taskType) return;
+
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY
+      });
+
+      const newNode = CreateFlowNode(taskType as TaskType, position);
+
+      setNodes((nds) => nds.concat(newNode));
+
+    },[setNodes, screenToFlowPosition]);
+
 
     useEffect(() => {
 
@@ -42,7 +67,7 @@ function FlowEditor({ workflow }: { workflow: Workflow}) {
 
     return (
     <main className="h-full w-full">
-      <ReactFlow nodes={nodes} edges={edges} onEdgesChange={onEdgeChange} onNodesChange={onNodeChange} nodeTypes={nodeTypes} snapToGrid snapGrid={snapGrid} fitView fitViewOptions={fitViewOptions}>
+      <ReactFlow nodes={nodes} edges={edges} onEdgesChange={onEdgeChange} onNodesChange={onNodeChange} nodeTypes={nodeTypes} snapToGrid snapGrid={snapGrid} fitView fitViewOptions={fitViewOptions} onDragOver={onDragOver} onDrop={onDrop}>
         <Controls position="top-left" fitViewOptions={fitViewOptions}/>
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
       </ReactFlow>
