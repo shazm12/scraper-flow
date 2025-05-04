@@ -5,7 +5,7 @@ import { GlobeIcon, LucideProps } from "lucide-react";
 export const LaunchBrowserTask = {
     type: TaskType.LAUNCH_BROWSER,
     label: "Launch Browser",
-    icon: (props: LucideProps) => ( <GlobeIcon className="stoke-pink-400" {...props} /> ),
+    icon: (props: LucideProps) => ( <GlobeIcon className="stoke-gray-400" {...props} /> ),
     isEntryPoint: true,
     inputs: [
         {
@@ -15,5 +15,6 @@ export const LaunchBrowserTask = {
             required: true,
             hideHandle: true
         },
-    ]
+    ],
+    outputs: [{ name: "Web Page", type: TaskParamType.BROWSER_INSTANCE }]
 };
