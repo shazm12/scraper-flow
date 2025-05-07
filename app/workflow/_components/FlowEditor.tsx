@@ -37,7 +37,7 @@ const fitViewOptions = { padding: 1 };
 function FlowEditor({ workflow }: { workflow: Workflow }) {
   const [nodes, setNodes, onNodeChange] = useNodesState<AppNode>([]);
   const [edges, setEdges, onEdgeChange] = useEdgesState<Edge>([]);
-  const { setViewport, screenToFlowPosition } = useReactFlow();
+  const { setViewport, screenToFlowPosition, updateNodeData } = useReactFlow();
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -65,7 +65,20 @@ function FlowEditor({ workflow }: { workflow: Workflow }) {
 
   const onConnect = useCallback((connection: Connection) => {
     setEdges((eds) => addEdge({...connection, animated: true},eds));
-  },[setEdges]);
+    if(!connection.targetHandle) return;
+
+    const node = nodes.find(node => node.id === connection.target);
+    if(!node) return;
+
+    const nodeInputs = node.data.inputs;
+    updateNodeData(node.id, {
+      inputs: {
+          ...nodeInputs,
+        [connection.targetHandle] : ""
+      }
+    });
+  },[nodes, setEdges, updateNodeData]);
+
 
   useEffect(() => {
     try {

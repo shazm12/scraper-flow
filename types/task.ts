@@ -1,6 +1,7 @@
 export enum TaskType {
     LAUNCH_BROWSER="LAUNCH_BROWSER",
-    PAGE_TO_HTML="PAGE_TO_HTML"
+    PAGE_TO_HTML="PAGE_TO_HTML",
+    EXTRACT_TEXT_FROM_HTML="EXTRACT_TEXT_FROM_HTML"
 }
 
 export enum TaskParamType {
@@ -21,5 +22,6 @@ export interface TaskParam {
 export interface ParamProps {
     param: TaskParam;
     value: string;
-    updateNodeParamValue: (newValue: string) => void
+    updateNodeParamValue: (newValue: string) => void;
+    disabled?: boolean
 }

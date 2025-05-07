@@ -13,8 +13,10 @@ function TaskMenu() {
         <Accordion type="multiple" className="w-full" defaultValue={["extraction"]}>
             <AccordionItem value="extraction">
                 <AccordionTrigger className="font-bold">Data Extraction</AccordionTrigger>
-                <AccordionContent>
+                <AccordionContent className="flex flex-col gap-2">
                     <TaskMenuBtn taskType={TaskType.PAGE_TO_HTML} />
+                    <TaskMenuBtn taskType={TaskType.EXTRACT_TEXT_FROM_HTML} />
+                    
                 </AccordionContent>
             </AccordionItem>
         </Accordion>

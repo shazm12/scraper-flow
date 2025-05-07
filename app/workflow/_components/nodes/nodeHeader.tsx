@@ -10,7 +10,7 @@ function NodeHeader({ taskType }: { taskType: TaskType }) {
     return (
     <div className="flex items-center justify-around gap-2 p-2">
         <task.icon size={16} />
-        <p className="text-xs font-bold uppercase text-muted-foreground">
+        <p className="flex items-center self-center justify-self-center text-xs font-bold uppercase text-muted-foreground w-1/4">
             {task.label}
         </p>
         <div className="flex gap-1 items-center">
