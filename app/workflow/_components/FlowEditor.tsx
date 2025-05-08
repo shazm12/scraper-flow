@@ -7,6 +7,7 @@ import {
   Connection,
   Controls,
   Edge,
+  getOutgoers,
   ReactFlow,
   useEdgesState,
   useNodesState,
@@ -20,6 +21,7 @@ import { TaskType } from "@/types/task";
 import NodeComponent from "./nodes/nodeComponent";
 import { AppNode } from "@/types/appNode";
 import DeleteableEdge from "./edges/deleteableEdge";
+import { TaskRegistry } from "@/lib/helper/workflow/task/registry";
 
 const nodeTypes = {
   FlowScrapeNode: NodeComponent,
@@ -80,6 +82,58 @@ function FlowEditor({ workflow }: { workflow: Workflow }) {
   },[nodes, setEdges, updateNodeData]);
 
 
+  const isValidConnection = useCallback((connection: Edge | Connection) => {
+    // No-self connection allowed
+    if (connection.source === connection.target) {
+      return false;
+    }
+  
+    // Find nodes
+    const source = nodes.find(node => node.id === connection.source);
+    const target = nodes.find(node => node.id === connection.target);    
+      
+    if (!source?.data?.type || !target?.data?.type) {
+      console.log("Invalid Connection: source or target node not found or missing type");
+      return false;
+    }
+  
+    const sourceTask = TaskRegistry[source.data.type];
+    const targetTask = TaskRegistry[target.data.type];
+    
+    // Check if handles exist
+    if (!connection.sourceHandle || !connection.targetHandle) {
+      return false;
+    }
+  
+    const output = sourceTask.outputs.find((o) => o.name === connection.sourceHandle);
+    const input = targetTask.inputs.find((i) => i.name === connection.targetHandle);
+  
+    if (!input || !output) {
+      return false; // Handle not found
+    }
+
+    if (input?.type == output?.type) {
+      return false; // Handle not found
+    }
+
+    const hasCycle = (node: AppNode, visited = new Set()) => {
+      if(visited.has(node.id)) return false;
+      visited.add(node.id);
+
+      for(const outgoer of getOutgoers(node, nodes, edges)) {
+        if(outgoer.id === connection.source) return true;
+        if(hasCycle(outgoer,visited)) return true;
+      }
+    }
+
+    const detectedCycle = hasCycle(target);
+    
+    return !detectedCycle;
+
+
+  }, [edges, nodes]);
+
+
   useEffect(() => {
     try {
       const flow = JSON.parse(workflow.defination);
@@ -108,6 +162,7 @@ function FlowEditor({ workflow }: { workflow: Workflow }) {
         onDragOver={onDragOver}
         onDrop={onDrop}
         onConnect={onConnect}
+        isValidConnection={isValidConnection}
       >
         <Controls position="top-left" fitViewOptions={fitViewOptions} />
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
