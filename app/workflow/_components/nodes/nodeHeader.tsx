@@ -6,6 +6,7 @@ import { AppNode } from "@/types/appNode";
 import { TaskType } from "@/types/task";
 import { useReactFlow } from "@xyflow/react";
 import { CoinsIcon, CopyIcon, GripVerticalIcon, TrashIcon } from "lucide-react";
+import { Neonderthaw } from "next/font/google";
 import React from "react";
 
 function NodeHeader({
@@ -29,7 +30,7 @@ function NodeHeader({
         {task.isEntryPoint && <Badge>Entry Point</Badge>}
         <Badge className="gap-2 flex items-center text-xs">
           <CoinsIcon size={16} />
-          TODO
+          {task.credits}
         </Badge>
         {!task.isEntryPoint && (
           <>
@@ -47,7 +48,7 @@ function NodeHeader({
             <Button variant={"ghost"} size={"icon"} onClick={() => {
                 const node = getNode(nodeId) as AppNode;
                 const newX = node.position.x ;
-                const newY = node.position.y;
+                const newY = node.position.y + (node.measured?.height || 0) +20;
 
                 const newNode = CreateFlowNode(node.data.type, {
                     x: newX,
