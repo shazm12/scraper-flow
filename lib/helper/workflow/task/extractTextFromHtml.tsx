@@ -19,7 +19,7 @@ export const ExtractTextFromHtml = {
         {
             name: "selector",
             type: TaskParamType.STRING,
-            required: true,
+            required: false,
         },
     ],
     outputs: [{ 
