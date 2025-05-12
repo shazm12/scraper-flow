@@ -92,10 +92,11 @@ function FlowEditor({ workflow }: { workflow: Workflow }) {
     const source = nodes.find(node => node.id === connection.source);
     const target = nodes.find(node => node.id === connection.target);    
       
-    if (!source?.data?.type || !target?.data?.type) {
+    if (!source || !target) {
       console.log("Invalid Connection: source or target node not found or missing type");
       return false;
     }
+
   
     const sourceTask = TaskRegistry[source.data.type];
     const targetTask = TaskRegistry[target.data.type];
@@ -107,14 +108,16 @@ function FlowEditor({ workflow }: { workflow: Workflow }) {
   
     const output = sourceTask.outputs.find((o) => o.name === connection.sourceHandle);
     const input = targetTask.inputs.find((i) => i.name === connection.targetHandle);
-  
+
     if (!input || !output) {
       return false; // Handle not found
     }
 
-    if (input?.type == output?.type) {
-      return false; // Handle not found
+    if (input?.type !== output?.type) {
+      return false; // Input types attached to handle are not of same type
     }
+
+
 
     const hasCycle = (node: AppNode, visited = new Set()) => {
       if(visited.has(node.id)) return false;
