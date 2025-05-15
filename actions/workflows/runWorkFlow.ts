@@ -3,82 +3,85 @@
 import { FlowToExecutionPlan } from "@/lib/helper/workflow/executionPlan";
 import { TaskRegistry } from "@/lib/helper/workflow/task/registry";
 import { prisma } from "@/lib/prisma";
-import { WorkflowExecutionPlan } from "@/types/workflow";
+import {
+  ExecutionPhaseStatus,
+  WorkflowExecutionPlan,
+  WorkflowExecutionStatus,
+  WorkflowExecutionTrigger,
+} from "@/types/workflow";
 import { auth } from "@clerk/nextjs/server";
-import { number } from "zod";
-
+import { redirect } from "next/navigation";
 
 
 export async function RunWorkFlow(form: {
-    workflowId: string;
-    flowDefination?: string;
+  workflowId: string;
+  flowDefination?: string;
 }) {
-    const { userId } = auth();
-    if(!userId) {
-        throw new Error("Unauthenticated");
-    }
+  const { userId } = auth();
+  if (!userId) {
+    throw new Error("Unauthenticated");
+  }
 
-    const { workflowId, flowDefination } = form;
-    if(!workflowId) {
-        throw new Error("workflowId is requied");
-    }
+  const { workflowId, flowDefination } = form;
+  if (!workflowId) {
+    throw new Error("workflowId is requied");
+  }
 
-    const workflow = await prisma.workflow.findUnique({
-        where: {
-            userId,
-            id: workflowId
-        }
-    });
+  const workflow = await prisma.workflow.findUnique({
+    where: {
+      userId,
+      id: workflowId,
+    },
+  });
 
-    if(!workflow) {
-        throw new Error("Flow Defination is not defined!");
-    }
+  if (!workflow) {
+    throw new Error("Flow Defination is not defined!");
+  }
 
-    let executionPlan: WorkflowExecutionPlan;
-    if(!flowDefination) {
-        throw new Error("Workflow Defination is undefined");
-    }
+  let executionPlan: WorkflowExecutionPlan;
+  if (!flowDefination) {
+    throw new Error("Workflow Defination is undefined");
+  }
 
-    const flow = JSON.parse(flowDefination);
-    const result = FlowToExecutionPlan(flow.nodes, flow.edges);
-    
-    if(!result.executionPlan) {
-        throw new Error("No execution plan generated");
-    }
+  const flow = JSON.parse(flowDefination);
+  const result = FlowToExecutionPlan(flow.nodes, flow.edges);
 
-    executionPlan = result.executionPlan;
+  if (!result.executionPlan) {
+    throw new Error("No execution plan generated");
+  }
 
-    const execution = await prisma.workflowExecution.create({
-        data: {
-            workflowId,
-            userId,
-            status: "PENDING",
-            startedAt: new Date(),
-            trigger: "manual",
-            phases: {
-                create: executionPlan.flatMap(phase => {
-                    return phase.nodes.flatMap((node) => {
-                        return {
-                            userId,
-                            status:"CREATED",
-                            number: phase.phase,
-                            node: JSON.stringify(node),
-                            name: TaskRegistry[node.data.type].label
-                        }
-                    })
-                })
-            }
-        },
-        select: {
-            id: true,
-            phases: true
-        },
-    });
+  executionPlan = result.executionPlan;
 
-    if(!execution) {
-        throw new Error("Workflow Execution could not be created");
-    }
+  const execution = await prisma.workflowExecution.create({
+    data: {
+      workflowId,
+      userId,
+      status: WorkflowExecutionStatus.PENDING,
+      startedAt: new Date(),
+      trigger: WorkflowExecutionTrigger.MANUAL,
+      phases: {
+        create: executionPlan.flatMap((phase) => {
+          return phase.nodes.flatMap((node) => {
+            return {
+              userId,
+              status: ExecutionPhaseStatus.CREATED,
+              number: phase.phase,
+              node: JSON.stringify(node),
+              name: TaskRegistry[node.data.type].label,
+            };
+          });
+        }),
+      },
+    },
+    select: {
+      id: true,
+      phases: true,
+    },
+  });
 
+  if (!execution) {
+    throw new Error("Workflow Execution could not be created");
+  }
 
-    
+  redirect(`/workflow/runs/${workflowId}/${execution.id}`);
 }
