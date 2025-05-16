@@ -3,6 +3,7 @@ import TopBar from "@/app/workflow/_components/topbar/topBar";
 import { auth } from "@clerk/nextjs/server";
 import { Loader2Icon } from "lucide-react";
 import React, { Suspense } from "react";
+import ExecutionViewer from "./_components/executionViewer";
 
 function ExecutionViewerPage({
   params,
@@ -49,9 +50,7 @@ async function ExectionViewerWrapper({
 
 
   return (
-    <pre>
-      {JSON.stringify(workflowExecution, null, 4)}
-    </pre>
+    <ExecutionViewer initialData={workflowExecution} />
   );
 }
 
