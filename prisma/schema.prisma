@@ -34,7 +34,7 @@ model Workflow {
 model WorkflowExecution {
   id                 String    @id @default(cuid())
   workflowId         String
-  workflowDefination String @default("{}")
+  workflowDefination String    @default("{}")
   userId             String
   trigger            String
   status             String
@@ -62,4 +62,14 @@ model ExecutionPhase {
 
   workflowExecutionId String
   execution           WorkflowExecution @relation(fields: [workflowExecutionId], references: [id], onDelete: Cascade)
+  logs                ExecutionLog[]
+}
+
+model ExecutionLog {
+  id               String         @id @default(cuid())
+  logLevel         String
+  message          String
+  timestamp        DateTime       @default(now())
+  executionPhaseId String
+  executionPhase   ExecutionPhase @relation(fields: [executionPhaseId], references: [id], onDelete: Cascade)
 }
