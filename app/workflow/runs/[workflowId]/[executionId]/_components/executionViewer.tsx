@@ -3,6 +3,8 @@ import { getWorkflowExecutionWithPhases } from "@/actions/workflows/getWorkflowE
 import { GetWorkflowPhaseDetails } from "@/actions/workflows/getWorkflowPhaseDetails";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { DatesToDurationString } from "@/lib/helper/dates";
 import { GetPhasesTotalCost } from "@/lib/helper/phases";
@@ -23,7 +25,7 @@ import React, { ReactNode, useState } from "react";
 type ExecutionData = Awaited<ReturnType<typeof getWorkflowExecutionWithPhases>>;
 
 function ExecutionViewer({ initialData }: { initialData: ExecutionData }) {
-  const [selectedPhase, setSelectedPhase ] = useState<string | null>(null);
+  const [selectedPhase, setSelectedPhase] = useState<string | null>(null);
   const query = useQuery({
     queryKey: ["execution", initialData?.id],
     initialData,
@@ -40,13 +42,13 @@ function ExecutionViewer({ initialData }: { initialData: ExecutionData }) {
   const phaseDetails = useQuery({
     queryKey: ["phaseDetails", selectedPhase],
     enabled: selectedPhase !== null,
-    queryFn: () => GetWorkflowPhaseDetails(selectedPhase!)
-  })
+    queryFn: () => GetWorkflowPhaseDetails(selectedPhase!),
+  });
 
   const creditsConsumed = GetPhasesTotalCost(query?.data?.phases || []);
-  
+
   const isRunning = query?.data?.status === WorkflowExecutionStatus.RUNNING;
-  
+
   return (
     <div className="flex w-full h-full">
       <aside className="w-[440px] min-w-[440px] max-w-[440px] border-r-2 border-separate flex flex-grow flex-col overflow-hidden">
@@ -69,7 +71,17 @@ function ExecutionViewer({ initialData }: { initialData: ExecutionData }) {
               </span>
             }
           />
-          <ExecutionLabel Icon={ClockIcon} label="Duration" value={duration ? duration: <Loader2Icon className="animate-spin" size={20} />} />
+          <ExecutionLabel
+            Icon={ClockIcon}
+            label="Duration"
+            value={
+              duration ? (
+                duration
+              ) : (
+                <Loader2Icon className="animate-spin" size={20} />
+              )
+            }
+          />
           <ExecutionLabel
             Icon={CoinsIcon}
             label="Credits Consumed"
@@ -91,8 +103,8 @@ function ExecutionViewer({ initialData }: { initialData: ExecutionData }) {
               variant={selectedPhase === phase.id ? "secondary" : "ghost"}
               className="w-full justify-between"
               onClick={() => {
-                if(isRunning) return;
-                setSelectedPhase(phase.id)
+                if (isRunning) return;
+                setSelectedPhase(phase.id);
               }}
             >
               <div className="flex items-center gap -2">
@@ -104,13 +116,55 @@ function ExecutionViewer({ initialData }: { initialData: ExecutionData }) {
               </div>
             </Button>
           ))}
-
         </div>
       </aside>
       <div className="flex w-full h-full">
-        <pre>
-          {JSON.stringify(phaseDetails.data, null , 4)}
-        </pre>
+        {isRunning && (
+          <div className="flex items-center flex-col gap-2 justify-center w-full h-full">
+            <p className="font-bold"> Run is in progress, please wait...</p>
+          </div>
+        )}
+        {!isRunning && !selectedPhase && (
+          <div className="flex items-center flex-col gap-2 justify-center w-full h-full">
+            <div className="flex flex-col gap-1 text-center">
+              <p className="font-bold">No phase selected</p>
+              <p className="text-sm text-muted-foreground">
+                Select a phase to view details
+              </p>
+            </div>
+          </div>
+        )}
+
+        {!isRunning && selectedPhase && phaseDetails.data && (
+          <div className="flex flex-col py-4 container gap-4 overflow-auto">
+            <div className="flex gap-2 items-center">
+              <Badge variant={"outline"} className="space-x-4">
+                <div className="flex gap-1 items-center">
+                  <CoinsIcon className="stroke-muted-foreground" size={19} />
+                  <span>Credits</span>
+                </div>
+                <span>Todo</span>
+              </Badge>
+              <Badge variant={"outline"} className="space-x-4">
+                <div className="flex gap-1 items-center">
+                  <ClockIcon className="stroke-muted-foreground" size={19} />
+                  <span>Duration</span>
+                </div>
+                <span>
+                  {DatesToDurationString(
+                    phaseDetails.data.completedAt,
+                    phaseDetails.data.startedAt
+                  ) || "-"}
+                </span>
+              </Badge>
+            </div>
+            <ParameterViewer
+              title="Inputs"
+              subtitle="Inputs used for this phase"
+              paramJson={phaseDetails.data.inputs}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -139,3 +193,44 @@ function ExecutionLabel({
 }
 
 export default ExecutionViewer;
+
+function ParameterViewer({
+  title,
+  subtitle,
+  paramJson,
+}: {
+  title: string;
+  subtitle: string;
+  paramJson: string | null;
+}) {
+  const params = paramJson ? JSON.parse(paramJson) : undefined;
+  return (
+    <Card>
+      <CardHeader className="rounded-lg rounded-b-none border-b py-4 bg-gray-50 dark:bg-background">
+        <CardTitle className="text-base">
+          {title}
+        </CardTitle>
+        <CardDescription className="text-muted-foreground">
+          {subtitle}
+        </CardDescription>
+        <CardContent className="py-4">
+          <div className="flex flex-col gap-2">
+            {(!params || Object.keys(params).length === 0) && (
+              <p className="text-sm">
+                No parameters generated for this phase
+              </p>
+            )}
+            {params && Object.entries(params).map(([key, value]) => (
+              <div key={key} className="flex justify-between items-center space-y-1">
+                <p className="text-sm text-muted-foreground flex-1 basis-1/3">
+                  {key}
+                </p>
+                <Input readOnly className="flex-1 basis-2/3" value={value as string} />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </CardHeader>
+    </Card>
+  );
+}
