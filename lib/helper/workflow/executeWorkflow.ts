@@ -34,7 +34,7 @@ export async function ExecuteWorkflow(executionId: string) {
 
   const environment: Environment = { phases: {} };
 
-  const edge = JSON.parse(execution.workflowDefination).edges as Edge[];
+  const edges = JSON.parse(execution.workflowDefination).edges as Edge[];
 
   await initializeWorkflowExecution(executionId, execution.workflowId);
   await initializePhaseStatuses(execution);
@@ -43,7 +43,7 @@ export async function ExecuteWorkflow(executionId: string) {
   let creditsConsumed = 0;
 
   for (const phase of execution.phases) {
-    const phaseExecution = await executeWorkflowPhase(phase, environment, edge);
+    const phaseExecution = await executeWorkflowPhase(phase, environment, edges);
     if (!phaseExecution.success) {
       executionFailed = true;
       break;
@@ -161,9 +161,6 @@ async function executeWorkflowPhase(
   });
 
   const creditsRequired = TaskRegistry[node.data.type].credits;
-  console.log(
-    `Executing phase:${phase.name} with ${creditsRequired} credits required`
-  );
 
   await waitFor(2000);
 
@@ -237,8 +234,9 @@ async function setupEnvironmentForPhase(
       environment.phases[node.id].inputs[input.name] = inputValue;
       continue;
     }
+
     const connectedEdge = edges.find(
-      (edge) => edge.target === node.id && edge.target === input.name
+      (edge) => edge.target === node.id && edge.targetHandle === input.name
     );
     if (!connectedEdge) {
       console.error("Missing edge for input ", input.name, node.id);
@@ -251,7 +249,6 @@ async function setupEnvironmentForPhase(
     environment.phases[node.id].inputs[input.name] = outputValue;
   }
 
-  //Get input value from output in the environment
 }
 
 function createExecutionEnvironment(
