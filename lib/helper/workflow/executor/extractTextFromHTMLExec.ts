@@ -19,24 +19,22 @@ export async function extractTextFromHTMLExecutor(
     return false;
   }
 
-  const $ = cheerio.load(html);
-  const element = $(selector);
-
-  if (!element) {
-    environment.log.error("Element is not provided");
-    return false;
-  }
-
-  const extractedText = $.text(element);
-  if (!extractedText) {
-    environment.log.error("Text could not be extracted!");
-    return false;
-  }
-
-  environment.setOutput("Extracted Text", extractedText);
-
   try {
-    await waitFor(3000);
+    const $ = cheerio.load(html);
+    const element = $(selector);
+
+    if (!element) {
+      environment.log.error("Element is not provided");
+      return false;
+    }
+
+    const extractedText = $.text(element);
+    if (!extractedText) {
+      environment.log.error("Text could not be extracted!");
+      return false;
+    }
+    environment.setOutput("Extracted Text", extractedText);
+    environment.log.info("Text Extracted  successfully");
     return true;
   } catch (error: any) {
     environment.log.error(error);
