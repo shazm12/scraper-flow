@@ -24,7 +24,7 @@ import { DatesToDurationString } from "@/lib/helper/dates";
 import { GetPhasesTotalCost } from "@/lib/helper/phases";
 import { cn } from "@/lib/utils";
 import { LogLevel } from "@/types/log";
-import { WorkflowExecutionStatus } from "@/types/workflow";
+import { ExecutionPhaseStatus, WorkflowExecutionStatus } from "@/types/workflow";
 import { ExecutionLog } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
@@ -37,7 +37,9 @@ import {
   LucideIcon,
   WorkflowIcon,
 } from "lucide-react";
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
+import PhaseStatusBadge from "./phaseStatusBadge";
+import ReactCountUpWrapper from "@/components/reactCountUpWrapper";
 
 type ExecutionData = Awaited<ReturnType<typeof getWorkflowExecutionWithPhases>>;
 
@@ -66,6 +68,21 @@ function ExecutionViewer({ initialData }: { initialData: ExecutionData }) {
   const creditsConsumed = GetPhasesTotalCost(query?.data?.phases || []);
 
   const isRunning = query?.data?.status === WorkflowExecutionStatus.RUNNING;
+
+  useEffect(() => {
+    // While running we auto-select the current running phase in the sidebar
+    const phases = query.data?.phases || [];
+    if(isRunning) {
+      // Select the last executed phase
+      const phaseToSelect = phases.toSorted((a,b) => a.startedAt! > b.startedAt! ? -1: 1)[0];
+      setSelectedPhase(phaseToSelect.id);
+      return;
+    }
+    else {
+      const phaseToSelect = phases.toSorted((a,b) => a.completedAt! > b.completedAt! ? -1: 1)[0];
+      setSelectedPhase(phaseToSelect.id);
+    }
+  },[query?.data?.phases, isRunning, setSelectedPhase]);
 
   return (
     <div className="flex w-full h-full">
@@ -103,7 +120,7 @@ function ExecutionViewer({ initialData }: { initialData: ExecutionData }) {
           <ExecutionLabel
             Icon={CoinsIcon}
             label="Credits Consumed"
-            value={creditsConsumed}
+            value={<ReactCountUpWrapper value={creditsConsumed} />}
           />
         </div>
         <Separator />
@@ -130,7 +147,7 @@ function ExecutionViewer({ initialData }: { initialData: ExecutionData }) {
                 <Badge variant={"outline"}>{index + 1}</Badge>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">{phase.status}</p>
+                <PhaseStatusBadge status={phase.status as ExecutionPhaseStatus} />
               </div>
             </Button>
           ))}
@@ -161,7 +178,7 @@ function ExecutionViewer({ initialData }: { initialData: ExecutionData }) {
                   <CoinsIcon className="stroke-muted-foreground" size={19} />
                   <span>Credits</span>
                 </div>
-                <span>Todo</span>
+                <span>{phaseDetails.data.creditsConsumed}</span>
               </Badge>
               <Badge variant={"outline"} className="space-x-4">
                 <div className="flex gap-1 items-center">
