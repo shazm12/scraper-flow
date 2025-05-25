@@ -1,5 +1,4 @@
 import { ExecutionEnvironment } from "@/types/executor";
-import { waitFor } from "../../waitFor";
 import { PageToHtmlTask } from "../task/pageToHtml";
 
 export async function pageToHtmlExecutor(

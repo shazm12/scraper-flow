@@ -1,5 +1,4 @@
 import { ExecutionEnvironment } from "@/types/executor";
-import { waitFor } from "../../waitFor";
 import { ExtractTextFromHtmlTask } from "../task/extractTextFromHtml";
 import * as cheerio from "cheerio";
 
