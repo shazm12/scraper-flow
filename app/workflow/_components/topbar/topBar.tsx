@@ -7,6 +7,7 @@ import SaveButton from "./saveButton";
 import { useRouter } from "next/navigation";
 import ExecuteButton from "./executeButton";
 import NavigationTabs from "./navigationTabs";
+import PublishButton from "./publishButton";
 
 interface Props {
   title: string;
@@ -39,6 +40,7 @@ function TopBar({ title, subtitle, workflowId, hideButtons = false }: Props) {
         {!hideButtons && (
           <>
             <ExecuteButton workflowId={workflowId} />
+            <PublishButton workflowId={workflowId} />
             <SaveButton workflowId={workflowId} />
           </>
         )}
