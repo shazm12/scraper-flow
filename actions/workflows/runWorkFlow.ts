@@ -9,10 +9,10 @@ import {
   WorkflowExecutionPlan,
   WorkflowExecutionStatus,
   WorkflowExecutionTrigger,
+  WorkflowStatus,
 } from "@/types/workflow";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-
 
 export async function RunWorkFlow(form: {
   workflowId: string;
@@ -40,24 +40,33 @@ export async function RunWorkFlow(form: {
   }
 
   let executionPlan: WorkflowExecutionPlan;
-  if (!flowDefination) {
-    throw new Error("Workflow Defination is undefined");
+  let workflowDefination = flowDefination;
+  if (workflow.status === WorkflowStatus.PUBLISHED) {
+    if (!workflow.executionPlan) {
+      throw new Error("No execution plan found for published workflow");
+    }
+    executionPlan = JSON.parse(workflow.executionPlan);
+    workflowDefination = workflow.defination;
+  } else {
+    if (!flowDefination) {
+      throw new Error("Workflow Defination is undefined");
+    }
+
+    const flow = JSON.parse(flowDefination);
+    const result = FlowToExecutionPlan(flow.nodes, flow.edges);
+
+    if (!result.executionPlan) {
+      throw new Error("No execution plan generated");
+    }
+
+    executionPlan = result.executionPlan;
   }
-
-  const flow = JSON.parse(flowDefination);
-  const result = FlowToExecutionPlan(flow.nodes, flow.edges);
-
-  if (!result.executionPlan) {
-    throw new Error("No execution plan generated");
-  }
-
-  executionPlan = result.executionPlan;
 
   const execution = await prisma.workflowExecution.create({
     data: {
       workflowId,
       userId,
-      workflowDefination: flowDefination,
+      workflowDefination,
       status: WorkflowExecutionStatus.PENDING,
       startedAt: new Date(),
       trigger: WorkflowExecutionTrigger.MANUAL,
@@ -89,6 +98,3 @@ export async function RunWorkFlow(form: {
 
   redirect(`/workflow/runs/${workflowId}/${execution.id}`);
 }
-
-
-
