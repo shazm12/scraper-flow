@@ -10,6 +10,7 @@ import { FileTextIcon, MoreVerticalIcon, PlayIcon, ShuffleIcon, TrashIcon } from
 import Link from 'next/link';
 import React, { useState } from 'react'
 import DeleteWorkflowDialog from './deleteWorkflowDialog';
+import RunButton from './runButton';
 
 function WorkflowCard({workflow}:{ workflow: Workflow}) {
     
@@ -46,6 +47,9 @@ function WorkflowCard({workflow}:{ workflow: Workflow}) {
                     </div>
                 </div>
                 <div className="flex items-center space-x-2">
+                    {!isDraft && (
+                        <RunButton workflowId={workflow.id} />
+                    )}
                     <Link
                         href={`/workflow/editor/${workflow.id}`}
                         className={
