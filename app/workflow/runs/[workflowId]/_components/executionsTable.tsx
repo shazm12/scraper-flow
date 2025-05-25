@@ -62,7 +62,7 @@ function ExecutionsTable({
                     <span className="font-semibold"></span>
                     <div className="text-muted-foreground text-xs">
                       <span>Trggered via</span>
-                      <Badge variant={"outline"}>{execution.trigger}</Badge>
+                      <Badge className="ml-1" variant={"outline"}>{execution.trigger}</Badge>
                     </div>
                   </div>
                 </TableCell>

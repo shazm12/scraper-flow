@@ -24,7 +24,10 @@ import { DatesToDurationString } from "@/lib/helper/dates";
 import { GetPhasesTotalCost } from "@/lib/helper/phases";
 import { cn } from "@/lib/utils";
 import { LogLevel } from "@/types/log";
-import { ExecutionPhaseStatus, WorkflowExecutionStatus } from "@/types/workflow";
+import {
+  ExecutionPhaseStatus,
+  WorkflowExecutionStatus,
+} from "@/types/workflow";
 import { ExecutionLog } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
@@ -64,7 +67,6 @@ function ExecutionViewer({ initialData }: { initialData: ExecutionData }) {
     queryFn: () => GetWorkflowPhaseDetails(selectedPhase!),
   });
 
-
   const creditsConsumed = GetPhasesTotalCost(query?.data?.phases || []);
 
   const isRunning = query?.data?.status === WorkflowExecutionStatus.RUNNING;
@@ -72,17 +74,20 @@ function ExecutionViewer({ initialData }: { initialData: ExecutionData }) {
   useEffect(() => {
     // While running we auto-select the current running phase in the sidebar
     const phases = query.data?.phases || [];
-    if(isRunning) {
+    if (isRunning) {
       // Select the last executed phase
-      const phaseToSelect = phases.toSorted((a,b) => a.startedAt! > b.startedAt! ? -1: 1)[0];
+      const phaseToSelect = phases.toSorted((a, b) =>
+        a.startedAt! > b.startedAt! ? -1 : 1
+      )[0];
       setSelectedPhase(phaseToSelect.id);
       return;
-    }
-    else {
-      const phaseToSelect = phases.toSorted((a,b) => a.completedAt! > b.completedAt! ? -1: 1)[0];
+    } else {
+      const phaseToSelect = phases.toSorted((a, b) =>
+        a.completedAt! > b.completedAt! ? -1 : 1
+      )[0];
       setSelectedPhase(phaseToSelect.id);
     }
-  },[query?.data?.phases, isRunning, setSelectedPhase]);
+  }, [query?.data?.phases, isRunning, setSelectedPhase]);
 
   return (
     <div className="flex w-full h-full">
@@ -91,7 +96,14 @@ function ExecutionViewer({ initialData }: { initialData: ExecutionData }) {
           <ExecutionLabel
             Icon={CircleDashedIcon}
             label="Status"
-            value={query?.data?.status}
+            value={
+              <div className="font-semibold capitalize flex gap-2 items-center">
+                <PhaseStatusBadge
+                  status={query?.data?.status as ExecutionPhaseStatus}
+                />
+                <span>{query?.data?.status}</span>
+              </div>
+            }
           />
           <ExecutionLabel
             Icon={CalendarIcon}
@@ -147,7 +159,9 @@ function ExecutionViewer({ initialData }: { initialData: ExecutionData }) {
                 <Badge variant={"outline"}>{index + 1}</Badge>
               </div>
               <div>
-                <PhaseStatusBadge status={phase.status as ExecutionPhaseStatus} />
+                <PhaseStatusBadge
+                  status={phase.status as ExecutionPhaseStatus}
+                />
               </div>
             </Button>
           ))}
@@ -320,7 +334,9 @@ function LogViewer({ logs }: { logs: ExecutionLog[] | undefined }) {
                 >
                   {log.logLevel}
                 </TableCell>
-                <TableCell className="text-sm flex-1 p-[3px] pl-4">{log.message}</TableCell>
+                <TableCell className="text-sm flex-1 p-[3px] pl-4">
+                  {log.message}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

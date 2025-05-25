@@ -4,13 +4,14 @@ import GetWorkflowExecutions from "@/actions/workflows/getWorkflowExecutions";
 import { InboxIcon, Loader2Icon } from "lucide-react";
 import ExecutionsTable from "./_components/executionsTable";
 
-export function ExecutionPage({ params }: { params: { workflowId: string } }) {
+export default function ExecutionPage({ params }: { params: { workflowId: string } }) {
   return (
     <div className="h-full w-full overflow-auto">
       <TopBar
         workflowId={params.workflowId}
         title="All Runs"
         subtitle="List of all your runs"
+        hideButtons
       />
       <Suspense
         fallback={
