@@ -11,9 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { WorkflowStatus } from "@/types/workflow";
+import { WorkflowExecutionStatus, WorkflowStatus } from "@/types/workflow";
 import { Workflow } from "@prisma/client";
 import {
+  ChevronsRightIcon,
+  ClockIcon,
   CoinsIcon,
   CornerDownRightIcon,
   FileTextIcon,
@@ -29,6 +31,9 @@ import DeleteWorkflowDialog from "./deleteWorkflowDialog";
 import RunButton from "./runButton";
 import { Badge } from "@/components/ui/badge";
 import SchedulerDialog from "./schedulerDialog";
+import ExecutionStatusIndicator from "@/app/workflow/runs/[workflowId]/_components/executionStatusIndicator";
+import { formatDate, formatDistanceToNow } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 
 function WorkflowCard({ workflow }: { workflow: Workflow }) {
   const isDraft = workflow.status === WorkflowStatus.DRAFT;
@@ -97,6 +102,7 @@ function WorkflowCard({ workflow }: { workflow: Workflow }) {
           />
         </div>
       </CardContent>
+      <LastRunDetails workflow={workflow} />
     </Card>
   );
 }
@@ -149,12 +155,12 @@ function SchedulerSection({
   isDraft,
   creditsCost,
   workflowId,
-  cron
+  cron,
 }: {
   isDraft: boolean;
   creditsCost: number;
   workflowId: string;
-  cron: string | null
+  cron: string | null;
 }) {
   if (isDraft) {
     return null;
@@ -163,7 +169,11 @@ function SchedulerSection({
   return (
     <div className="flex items-center gap-2">
       <CornerDownRightIcon className="h-4 w-4 text-muted-foreground" />
-      <SchedulerDialog key={`${cron}-${workflowId}`} workflowId={workflowId} cron={cron} />
+      <SchedulerDialog
+        key={`${cron}-${workflowId}`}
+        workflowId={workflowId}
+        cron={cron}
+      />
       <MoveRightIcon className="h-4 w-4 text-muted-foreground" />
       <TooltipWrapper content="Credit consumption for full run">
         <div className="flex items-center gap-3">
@@ -176,6 +186,52 @@ function SchedulerSection({
           </Badge>
         </div>
       </TooltipWrapper>
+    </div>
+  );
+}
+
+function LastRunDetails({ workflow }: { workflow: Workflow }) {
+  const isDraft = workflow.status === WorkflowStatus.DRAFT;
+  if (isDraft) {
+    return null;
+  }
+  const { lastRunAt, lastRunStatus, lastRunId, nextRunAt } = workflow;
+  const formattetdStartedAt =
+    lastRunAt && formatDistanceToNow(lastRunAt, { addSuffix: true });
+  const nextScheduledRun =
+    nextRunAt && formatDate(nextRunAt, "yyyy-MM-dd HH:mm");
+  const nextScheduledRunUTC =
+    nextRunAt && formatInTimeZone(nextRunAt, "UTC", "HH:mm");
+  return (
+    <div className="bg-primary/5 px-4 py-1 justify-between items-center text-muted-foreground">
+      <div className="flex items-center text-sm gap-2">
+        {lastRunAt && (
+          <Link
+            href={`/workflows/runs/${workflow.id}/${lastRunId}`}
+            className="flex items-center text-sm gap-2 group"
+          >
+            <span>Last run:</span>
+            <ExecutionStatusIndicator
+              status={workflow.status as WorkflowExecutionStatus}
+            />
+            <span>{lastRunStatus}</span>
+            <span>{formattetdStartedAt}</span>
+            <ChevronsRightIcon
+              size={14}
+              className="-translate-x-[2px] group-hover:translate-x-0 transition"
+            />
+          </Link>
+        )}
+        {!lastRunAt && <p>No run yet</p>}
+      </div>
+      {nextRunAt && (
+        <div className="flex items-center text-sm gap-2">
+          <ClockIcon size={12} />
+          <span>Next run at:</span>
+          <span>{nextScheduledRun}</span>
+          <span className="text-sm">({nextScheduledRunUTC} UTC)</span>
+        </div>
+      )}
     </div>
   );
 }
