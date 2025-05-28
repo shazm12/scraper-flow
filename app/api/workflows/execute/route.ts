@@ -7,6 +7,7 @@ import {
   WorkflowExecutionStatus,
   WorkflowExecutionTrigger,
 } from "@/types/workflow";
+import CronExpressionParser from "cron-parser";
 import { timingSafeEqual } from "crypto";
 
 function isValidSecret(secret: string) {
@@ -57,34 +58,40 @@ export async function GET(request: Request) {
     );
   }
 
-  const execution = await prisma.workflowExecution.create({
-    data: {
-      workflowId,
-      userId: workflow.userId,
-      workflowDefination: workflow.defination,
-      status: WorkflowExecutionStatus.PENDING,
-      startedAt: new Date(),
-      trigger: WorkflowExecutionTrigger.CRON,
-      phases: {
-        create: executionPlan.flatMap((phase) => {
-          return phase.nodes.flatMap((node) => {
-            return {
-              userId: workflow.userId,
-              status: ExecutionPhaseStatus.CREATED,
-              number: phase.phase,
-              node: JSON.stringify(node),
-              name: TaskRegistry[node.data.type].label,
-            };
-          });
-        }),
+  try {
+    const cron = CronExpressionParser.parse(workflow.cron!, { tz: "UTC" });
+    const nextRun = cron.next().toDate();
+    const execution = await prisma.workflowExecution.create({
+      data: {
+        workflowId,
+        userId: workflow.userId,
+        workflowDefination: workflow.defination,
+        status: WorkflowExecutionStatus.PENDING,
+        startedAt: new Date(),
+        trigger: WorkflowExecutionTrigger.CRON,
+        phases: {
+          create: executionPlan.flatMap((phase) => {
+            return phase.nodes.flatMap((node) => {
+              return {
+                userId: workflow.userId,
+                status: ExecutionPhaseStatus.CREATED,
+                number: phase.phase,
+                node: JSON.stringify(node),
+                name: TaskRegistry[node.data.type].label,
+              };
+            });
+          }),
+        },
       },
-    },
-    select: {
-      id: true,
-      phases: true,
-    },
-  });
+      select: {
+        id: true,
+        phases: true,
+      },
+    });
 
-  await ExecuteWorkflow(execution.id);
-  return new Response(null, { status: 200 });
+    await ExecuteWorkflow(execution.id, nextRun);
+    return new Response(null, { status: 200 });
+  } catch (error) {
+    return Response.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 }
