@@ -17,7 +17,7 @@ import { Edge } from "@xyflow/react";
 import { LogCollector } from "@/types/log";
 import { createLogCollector } from "@/lib/log";
 
-export async function ExecuteWorkflow(executionId: string) {
+export async function ExecuteWorkflow(executionId: string, nextRun?: Date) {
   const execution = await prisma.workflowExecution.findUnique({
     where: {
       id: executionId,
@@ -35,14 +35,19 @@ export async function ExecuteWorkflow(executionId: string) {
 
   const edges = JSON.parse(execution.workflowDefination).edges as Edge[];
 
-  await initializeWorkflowExecution(executionId, execution.workflowId);
+  await initializeWorkflowExecution(executionId, execution.workflowId, nextRun);
   await initializePhaseStatuses(execution);
 
   let executionFailed = false;
   let creditsConsumed = 0;
 
   for (const phase of execution.phases) {
-    const phaseExecution = await executeWorkflowPhase(phase, environment, edges, execution.userId);
+    const phaseExecution = await executeWorkflowPhase(
+      phase,
+      environment,
+      edges,
+      execution.userId
+    );
     creditsConsumed += phaseExecution.creditsConsumed;
     if (!phaseExecution.success) {
       executionFailed = true;
@@ -64,7 +69,8 @@ export async function ExecuteWorkflow(executionId: string) {
 
 async function initializeWorkflowExecution(
   executionId: string,
-  workflowId: string
+  workflowId: string,
+  nextRunAt?: Date
 ) {
   await prisma.workflowExecution.update({
     where: {
@@ -84,6 +90,7 @@ async function initializeWorkflowExecution(
       lastRunAt: new Date(),
       lastRunStatus: WorkflowExecutionStatus.RUNNING,
       lastRunId: executionId,
+      ...(nextRunAt && { nextRunAt }),
     },
   });
 }
@@ -164,16 +171,21 @@ async function executeWorkflowPhase(
   const creditsRequired = TaskRegistry[node.data.type].credits;
 
   let success = await decrementCredits(userId, creditsRequired, LogCollector);
-  const creditsConsumed = success ? creditsRequired: 0;
-  if(success) {
+  const creditsConsumed = success ? creditsRequired : 0;
+  if (success) {
     //We can execute the phase if we have sufficient credtis
     success = await executePhase(phase, node, environment, LogCollector);
-
   }
-  
+
   const outputs = environment.phases[node.id].outputs;
 
-  await finalizePhase(phase.id, success, outputs, creditsConsumed, LogCollector);
+  await finalizePhase(
+    phase.id,
+    success,
+    outputs,
+    creditsConsumed,
+    LogCollector
+  );
 
   return { success, creditsConsumed };
 }
@@ -255,7 +267,6 @@ async function setupEnvironmentForPhase(
       ];
     environment.phases[node.id].inputs[input.name] = outputValue;
   }
-
 }
 
 function createExecutionEnvironment(
@@ -284,17 +295,20 @@ async function cleanUpEnvironment(environment: Environment) {
   }
 }
 
-async function decrementCredits( userId: string, amount: number, logCollector: LogCollector) {
+async function decrementCredits(
+  userId: string,
+  amount: number,
+  logCollector: LogCollector
+) {
   try {
     await prisma.userBalance.update({
-      where: { userId , credits: { gte: amount } },
+      where: { userId, credits: { gte: amount } },
       data: {
-        credits: {decrement : amount }
-      }
+        credits: { decrement: amount },
+      },
     });
     return true;
-  }
-  catch(err) {
+  } catch (err) {
     logCollector.error("insuffcient balance");
     return false;
   }
