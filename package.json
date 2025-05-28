@@ -48,6 +48,7 @@
     "cron-parser": "^5.2.0",
     "cronstrue": "^2.61.0",
     "date-fns": "^3.6.0",
+    "date-fns-tz": "^3.2.0",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.503.0",
