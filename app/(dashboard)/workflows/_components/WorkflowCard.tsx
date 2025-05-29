@@ -31,9 +31,10 @@ import DeleteWorkflowDialog from "./deleteWorkflowDialog";
 import RunButton from "./runButton";
 import { Badge } from "@/components/ui/badge";
 import SchedulerDialog from "./schedulerDialog";
-import ExecutionStatusIndicator from "@/app/workflow/runs/[workflowId]/_components/executionStatusIndicator";
+import ExecutionStatusIndicator, { ExecutionStatusLabel } from "@/app/workflow/runs/[workflowId]/_components/executionStatusIndicator";
 import { formatDate, formatDistanceToNow } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
+import DuplicateWorkflowDialog from "./duplicateWorkflowDialog";
 
 function WorkflowCard({ workflow }: { workflow: Workflow }) {
   const isDraft = workflow.status === WorkflowStatus.DRAFT;
@@ -44,7 +45,7 @@ function WorkflowCard({ workflow }: { workflow: Workflow }) {
   };
 
   return (
-    <Card className="border border-separate shadow-sm rounded-lg overflow-hidden hover:shadow-md dark-shadow-primary/30 mx-4">
+    <Card className="border border-separate shadow-sm rounded-lg overflow-hidden hover:shadow-md dark-shadow-primary/30 mx-4 group/card">
       <CardContent className="p-4 flex items-center justify-between h-[100px]">
         <div className="flex items-center justify-center space-x-3">
           <div
@@ -72,6 +73,7 @@ function WorkflowCard({ workflow }: { workflow: Workflow }) {
                   Draft
                 </span>
               )}
+              <DuplicateWorkflowDialog workflowId={workflow.id} />
             </h3>
             <SchedulerSection
               isDraft={isDraft}
@@ -214,7 +216,9 @@ function LastRunDetails({ workflow }: { workflow: Workflow }) {
             <ExecutionStatusIndicator
               status={workflow.status as WorkflowExecutionStatus}
             />
-            <span>{lastRunStatus}</span>
+            <ExecutionStatusLabel
+              status={workflow.status as WorkflowExecutionStatus}
+            />
             <span>{formattetdStartedAt}</span>
             <ChevronsRightIcon
               size={14}
