@@ -16,6 +16,7 @@ import { Browser, Page } from "puppeteer";
 import { Edge } from "@xyflow/react";
 import { LogCollector } from "@/types/log";
 import { createLogCollector } from "@/lib/log";
+import { log } from "console";
 
 export async function ExecuteWorkflow(executionId: string, nextRun?: Date) {
   const execution = await prisma.workflowExecution.findUnique({
@@ -230,6 +231,7 @@ async function executePhase(
 ): Promise<boolean> {
   const runFn = ExecutorRegistry[node.data.type];
   if (!runFn) {
+    LogCollector.error(`not found executor for ${node.data.type}`);
     return false;
   }
 

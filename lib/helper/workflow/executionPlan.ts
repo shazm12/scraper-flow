@@ -74,8 +74,6 @@ export function FlowToExecutionPlan(
         if (incommers.every((incomer) => planned.has(incomer.id))) {
           // If all the incommers are planned and there are still invalid inputs, this means that the input still
           // has invalid inputs, hence error
-
-          console.error("Invalid Inputs", currentNode.id, invalidInputs);
           inputsWithErrors.push({
             nodeId: currentNode.id,
             inputs: invalidInputs,
