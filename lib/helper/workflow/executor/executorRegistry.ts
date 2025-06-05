@@ -5,7 +5,9 @@ import { extractTextFromHTMLExecutor } from "./extractTextFromHTMLExec";
 import { ExecutionEnvironment } from "@/types/executor";
 import { WorkflowTask } from "@/types/workflow";
 import { fillInputExecutor } from "./fillInputExecutor";
-import { clickElmentExecutor } from "./clickELementExec";
+import { clickElmentExecutor } from "./clickElementExec";
+import { waitForElementExecutor } from "./WaitForElementExec";
+import { deliverViaWebhookExecutor } from "./deliverViaWebhookExec";
 
 type ExecutorFn<T extends WorkflowTask>  = (environment: ExecutionEnvironment<T>) => Promise<boolean>
 
@@ -18,5 +20,7 @@ export const ExecutorRegistry: RegistryType = {
     PAGE_TO_HTML: pageToHtmlExecutor,
     EXTRACT_TEXT_FROM_HTML: extractTextFromHTMLExecutor,
     FILL_INPUT: fillInputExecutor,
-    CLICK_ELEMENT: clickElmentExecutor
+    CLICK_ELEMENT: clickElmentExecutor,
+    WAIT_FOR_ELEMENT: waitForElementExecutor,
+    DELIVER_VIA_WEBHOOK: deliverViaWebhookExecutor
 }
