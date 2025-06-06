@@ -16,11 +16,11 @@ function BreadcrumbHeader() {
                     {paths.map((path,index) => (
                         <React.Fragment key={index}>
                             <BreadcrumbItem>
-                                <p className="text-center items-center">{path !== "" ? "> " :""}</p>
                                 <BreadcrumbLink className="capitalize" href={`/${path}`}>
                                     {path === "" ? "home": path }
                                 </BreadcrumbLink>
                             </BreadcrumbItem>
+                            {index !== paths.length -1 && <BreadcrumbSeparator />}
                         </React.Fragment>
                     ))}
                 </BreadcrumbList>
