@@ -10,7 +10,7 @@ import React from 'react'
 function TaskMenu() {
   return (
     <aside className="w-[340px] min-w-[340px] max-w-[340px] border-r-2 border-separate h-full p-2 px-4 overflow-auto">
-        <Accordion type="multiple" className="w-full" defaultValue={["extraction", "interactions","timing","results"]}>
+        <Accordion type="multiple" className="w-full" defaultValue={["extraction", "interactions","timing","results", "storage"]}>
             <AccordionItem value="extraction">
                 <AccordionTrigger className="font-bold">Data Extraction</AccordionTrigger>
                 <AccordionContent className="flex flex-col gap-2">
@@ -24,12 +24,20 @@ function TaskMenu() {
                 <AccordionContent className="flex flex-col gap-2">
                     <TaskMenuBtn taskType={TaskType.FILL_INPUT} />    
                     <TaskMenuBtn taskType={TaskType.CLICK_ELEMENT} />                   
+                    <TaskMenuBtn taskType={TaskType.NAVIGATE_URL} />                   
                 </AccordionContent>
             </AccordionItem>
             <AccordionItem value="timing">
                 <AccordionTrigger className="font-bold">Timing Controls</AccordionTrigger>
                 <AccordionContent className="flex flex-col gap-2">
                     <TaskMenuBtn taskType={TaskType.WAIT_FOR_ELEMENT} />    
+                </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="storage">
+                <AccordionTrigger className="font-bold">Data Storage</AccordionTrigger>
+                <AccordionContent className="flex flex-col gap-2">
+                    <TaskMenuBtn taskType={TaskType.READ_PROPERTY_FROM_JSON} />    
+                    <TaskMenuBtn taskType={TaskType.ADD_PROPERTY_TO_JSON} />    
                 </AccordionContent>
             </AccordionItem>
             <AccordionItem value="results">

@@ -33,7 +33,7 @@ export async function extractTextFromHTMLExecutor(
       return false;
     }
     environment.setOutput("Extracted Text", extractedText);
-    environment.log.info("Text Extracted  successfully");
+    environment.log.info("Data Extracted via AI successfully");
     return true;
   } catch (error: any) {
     environment.log.error(error);

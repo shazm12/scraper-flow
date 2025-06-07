@@ -44,7 +44,11 @@ export async function extractDataFromAIExecutor(
       return false;
     }
 
-    const mockExtractedData = {};
+    const mockExtractedData = {
+      userNameSelector: "username",
+      passwordSelector: "password",
+      loginSelector: "body > div > form > input.btn.btn-primary"
+    };
 
     environment.setOutput(
       "Extracted Data",
