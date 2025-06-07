@@ -12,6 +12,7 @@ import { extractDataFromAIExecutor } from "./extractDataFromAIExec";
 import { readPropertyFromJSONExec } from "./readPropertyFromJSONExec";
 import { addPropertyToJSONExec } from "./addPropertyToJSONExec";
 import { NavigateURLExec } from "./navigateURLExec";
+import { scrollToElementExec } from "./scrollToElementExec";
 
 type ExecutorFn<T extends WorkflowTask>  = (environment: ExecutionEnvironment<T>) => Promise<boolean>
 
@@ -30,5 +31,6 @@ export const ExecutorRegistry: RegistryType = {
     EXTRACT_DATA_WITH_AI: extractDataFromAIExecutor,
     READ_PROPERTY_FROM_JSON: readPropertyFromJSONExec,
     ADD_PROPERTY_TO_JSON: addPropertyToJSONExec,
-    NAVIGATE_URL: NavigateURLExec
+    NAVIGATE_URL: NavigateURLExec,
+    SCROLL_TO_ELEMENT: scrollToElementExec
 }
