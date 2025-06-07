@@ -16,7 +16,7 @@ function TaskMenu() {
                 <AccordionContent className="flex flex-col gap-2">
                     <TaskMenuBtn taskType={TaskType.PAGE_TO_HTML} />
                     <TaskMenuBtn taskType={TaskType.EXTRACT_TEXT_FROM_HTML} />
-                    
+                    <TaskMenuBtn taskType={TaskType.EXTRACT_DATA_WITH_AI} />
                 </AccordionContent>
             </AccordionItem>
              <AccordionItem value="interactions">
