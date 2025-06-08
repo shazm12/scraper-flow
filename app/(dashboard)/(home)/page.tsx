@@ -4,6 +4,10 @@ import PeriodSelector from "./_components/periodSelector";
 import { Period } from "@/types/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GetStatsCardValues } from "@/actions/analytics/getStatsCardValues";
+import { CirclePlayIcon, CoinsIcon, WaypointsIcon } from "lucide-react";
+import StatsCard from "./_components/statsCard";
+import { GetWorkflowExecutionStats } from "@/actions/analytics/getWorkflowExecutionStatus";
+import ExecutionStatusChart from "./_components/executionStatusChart";
 
 function HomePage({
   searchParams,
@@ -25,7 +29,14 @@ function HomePage({
           <PeriodSelectorWrapper selectedPeriod={period} />
         </Suspense>
       </div>
-      <StatsCards selectedPeriod={period} />
+      <div className="h-full py-6 flex flex-col gap-4">
+        <Suspense fallback={<StatsCardSkeleton />}>
+          <StatsCards selectedPeriod={period} />
+        </Suspense>        
+        <Suspense fallback={<Skeleton className="w-full h-[300px]" />}>
+          <StatsExecutionStatus selectedPeriod={period} />
+        </Suspense>
+      </div>
     </div>
   );
 }
@@ -37,7 +48,48 @@ async function PeriodSelectorWrapper({ selectedPeriod }: { selectedPeriod: Perio
 
 async function StatsCards({ selectedPeriod }: { selectedPeriod: Period }) {
   const data = await GetStatsCardValues(selectedPeriod);
-  return();
+  return(
+    <div className="grid gap-3 lg:gap-8 lg:grid-cols-3 min-h-[120px]">
+      <StatsCard
+        title="Workflow Execution"
+        value={data.worflowExecutions}
+        icon={CirclePlayIcon}
+      />      
+      <StatsCard
+        title="Phases Execution"
+        value={data.phaseExecutions}
+        icon={WaypointsIcon}
+      />
+      <StatsCard
+        title="Credits Consumed"
+        value={data.creditsConsumed}
+        icon={CoinsIcon}
+      />
+      
+    </div>
+  );
+}
+
+async function StatsExecutionStatus({ selectedPeriod }: {selectedPeriod: Period}) {
+
+  const data = await GetWorkflowExecutionStats(selectedPeriod);
+
+  return <ExecutionStatusChart data={data} />;
+
+}
+
+
+function StatsCardSkeleton() {
+  return(
+  <div className="grid gap-3 lg:gap-8 lg:grid-cols-3">
+    {
+      [1,2,3].map((i) => (
+        <Skeleton key={i} className="w-full min-h-[120px]" />
+      ))
+    }
+  </div>)
 }
 
 export default HomePage;
+
+
