@@ -70,6 +70,9 @@
     --ring: 142.4 71.8% 29.2%;
     --chart-1: 142 88% 28%;
     --chart-2: 140 74% 44%;
+    .react-flow__controls-button {
+      @apply !bg-accent;
+    }
   }
 }
 
@@ -92,3 +95,9 @@
     @apply !bg-accent;
   }
 }
+
+
+.react-flow__attribution {
+  background: transparent !important;
+}
+
