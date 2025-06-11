@@ -51,7 +51,7 @@ function CreditsPurchase() {
                   <span className="font-medium">
                     {pack.name} - {pack.label}
                   </span>
-                  <span className="font-bold text-primary">
+                  <span className="ml-3 font-bold text-primary">
                     ₹{(pack.price)}
                   </span>
                 </Label>

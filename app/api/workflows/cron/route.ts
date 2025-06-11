@@ -13,7 +13,6 @@ export async function GET(req: Request) {
     },
   });
 
-  console.log(workflows.length);
 
   for (const workflow of workflows) {
     triggerWorkflow(workflow.id);
